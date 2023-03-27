@@ -1,17 +1,28 @@
+using UnityEngine;
+
 public class Skeleton : Enemy
 {
-    public override int Health { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-
     /// <summary>
     /// Use for any Initialization
     /// </summary>
     public override void Init()
     {
         base.Init();
+        Health = health;
     }
 
-    public override void Damage()
+    public override void Movement()
     {
-        throw new System.NotImplementedException();
+        base.Movement();
+    }
+
+    public override void Damage(int damageAmount)
+    {
+        base.Damage(damageAmount);
+    }
+
+    protected override void FaceAttacker()
+    {
+        base.FaceAttacker();
     }
 }

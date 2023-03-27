@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, IDamageable
 {
     private Rigidbody2D _rigidBody;
     
@@ -16,6 +16,8 @@ public class Player : MonoBehaviour
     private bool _grounded = false;
 
     private PlayerAnimation _playerAnimation;
+
+    public int Health { get; set; }
 
     // Start is called before the first frame update
     void Start()
@@ -52,7 +54,6 @@ public class Player : MonoBehaviour
         var move = Input.GetAxisRaw("Horizontal");
         _grounded = IsGrounded();
 
-        Debug.DrawRay(transform.position, Vector2.down * .85f, Color.green);
         if (Input.GetKeyDown(KeyCode.Space) && _grounded == true)
         {
             _rigidBody.velocity = new Vector2(_rigidBody.velocity.x, _jumpForce);
@@ -98,5 +99,10 @@ public class Player : MonoBehaviour
         _resetJump = true;
         yield return new WaitForSeconds(0.1f);
         _resetJump = false;
+    }
+
+    public void Damage(int damageAmount)
+    {
+        Debug.Log("Player Damage!");
     }
 }

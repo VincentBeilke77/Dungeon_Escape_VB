@@ -1,3 +1,4 @@
+using TMPro.EditorUtilities;
 using UnityEngine;
 
 public abstract class Enemy : MonoBehaviour, IDamageable
@@ -15,11 +16,18 @@ public abstract class Enemy : MonoBehaviour, IDamageable
 
     protected Vector3 currentTarget;
 
-    public abstract int Health { get; set; }
+    protected bool isHit = false;
+
+    protected Player player;
+
+    protected bool isDead = false;
+
+    public virtual int Health { get; set; }
 
     public virtual void Init()
     {
         animator = GetComponentInChildren<Animator>();
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
     }
 
     private void Start()
@@ -29,11 +37,20 @@ public abstract class Enemy : MonoBehaviour, IDamageable
 
     public virtual void Update()
     {
+        if (isDead) return;
+        
         if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
             Movement();
+
+        float distance = Vector3.Distance(transform.localPosition, player.transform.localPosition);
+        if (distance > 2.0f)
+        {
+            isHit = false;
+            animator.SetBool("InCombat", false);
+        }
     }
 
-    protected virtual void Movement()
+    public virtual void Movement()
     {
         CheckForFlip();
 
@@ -48,7 +65,13 @@ public abstract class Enemy : MonoBehaviour, IDamageable
             animator.SetTrigger("Idle");
         }
 
-        transform.position = Vector3.MoveTowards(transform.position, currentTarget, speed * Time.deltaTime);
+        if (!isHit)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, currentTarget, speed * Time.deltaTime);
+        }
+
+        if (animator.GetBool("InCombat"))
+            FaceAttacker();
     }
 
     protected virtual void CheckForFlip()
@@ -63,5 +86,37 @@ public abstract class Enemy : MonoBehaviour, IDamageable
         }
     }
 
-    public abstract void Damage();
+    public virtual void Damage(int damageAmount)
+    {
+        Debug.Log($"{transform.name}::Damage()");
+        Health -= damageAmount;
+
+        animator.SetTrigger("Hit");
+        isHit = true;
+        animator.SetBool("InCombat", true);
+
+        if (Health < 0)
+        {
+            animator.SetTrigger("Death");
+            isDead = true;
+            Destroy(gameObject, 6.0f);
+        }
+    }
+
+    protected virtual void FaceAttacker()
+    {
+        Debug.Log("FaceAttacker");
+        Vector3 direction = player.transform.localPosition - transform.localPosition;
+
+        if (direction.x < 0)
+        {
+            Debug.Log("Face Left");
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+        else if (direction.x > 1)
+        {
+            Debug.Log("Face Right");
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+    }
 }
