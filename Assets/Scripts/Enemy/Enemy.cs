@@ -1,4 +1,3 @@
-using TMPro.EditorUtilities;
 using UnityEngine;
 
 public abstract class Enemy : MonoBehaviour, IDamageable
@@ -11,6 +10,8 @@ public abstract class Enemy : MonoBehaviour, IDamageable
     protected int gems;
     [SerializeField]
     protected Transform pointA, pointB;
+    [SerializeField]
+    protected GameObject diamondPrefab;
 
     protected Animator animator;
 
@@ -88,7 +89,8 @@ public abstract class Enemy : MonoBehaviour, IDamageable
 
     public virtual void Damage(int damageAmount)
     {
-        Debug.Log($"{transform.name}::Damage()");
+        if (isDead) return;
+
         Health -= damageAmount;
 
         animator.SetTrigger("Hit");
@@ -97,25 +99,25 @@ public abstract class Enemy : MonoBehaviour, IDamageable
 
         if (Health < 0)
         {
-            animator.SetTrigger("Death");
             isDead = true;
+            animator.SetTrigger("Death");
+            var diamond = Instantiate(diamondPrefab, transform.position, Quaternion.identity);
+
+            diamond.GetComponent<Diamond>().Diamonds = gems;
             Destroy(gameObject, 6.0f);
         }
     }
 
     protected virtual void FaceAttacker()
     {
-        Debug.Log("FaceAttacker");
         Vector3 direction = player.transform.localPosition - transform.localPosition;
 
         if (direction.x < 0)
         {
-            Debug.Log("Face Left");
             transform.localScale = new Vector3(-1, 1, 1);
         }
         else if (direction.x > 1)
         {
-            Debug.Log("Face Right");
             transform.localScale = new Vector3(1, 1, 1);
         }
     }

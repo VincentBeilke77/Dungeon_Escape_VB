@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityStandardAssets.CrossPlatformInput;
 
 public class Player : MonoBehaviour, IDamageable
 {
@@ -11,13 +12,27 @@ public class Player : MonoBehaviour, IDamageable
     private LayerMask _groundLayer;
     [SerializeField]
     private float _speed = 2.75f;
-    
+
+    private bool _isDead = false;
     private bool _resetJump;
     private bool _grounded = false;
 
     private PlayerAnimation _playerAnimation;
 
     public int Health { get; set; }
+
+    [SerializeField]
+    private int _diamonds;
+    public int Diamonds { 
+        get
+        {
+            return _diamonds;
+        } 
+        set
+        {
+            _diamonds = value;
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -32,18 +47,23 @@ public class Player : MonoBehaviour, IDamageable
         {
             Debug.LogError("Player animation is NULL.");
         }
+        Health = 4;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (_isDead) return;
+
         Movement();
         CheckForAttack();
+        Debug.Log("Diamonds: " + Diamonds);
     }
 
     private void CheckForAttack()
     {
-        if (Input.GetMouseButtonDown(0) && _grounded)
+        if ((Input.GetKeyDown(KeyCode.X) || CrossPlatformInputManager.GetButtonDown("A_Button")) 
+            && _grounded)
         {
             _playerAnimation.Attack();
         }
@@ -51,10 +71,13 @@ public class Player : MonoBehaviour, IDamageable
 
     private void Movement()
     {
-        var move = Input.GetAxisRaw("Horizontal");
+        var move = CrossPlatformInputManager.GetAxisRaw("Horizontal");
         _grounded = IsGrounded();
 
-        if (Input.GetKeyDown(KeyCode.Space) && _grounded == true)
+        Debug.DrawRay(transform.position, Vector2.down * .85f, Color.green);
+
+        if ((Input.GetKeyDown(KeyCode.Space) || CrossPlatformInputManager.GetButtonDown("B_Button")) 
+            && _grounded)
         {
             _rigidBody.velocity = new Vector2(_rigidBody.velocity.x, _jumpForce);
             StartCoroutine(ResetJumpRoutine());
@@ -103,6 +126,23 @@ public class Player : MonoBehaviour, IDamageable
 
     public void Damage(int damageAmount)
     {
-        Debug.Log("Player Damage!");
+        if (_isDead) return;
+        Health -= 1;
+        UIManager.Instance.UpdateLives(Health);
+        if (Health < 1)
+        {
+            _isDead = true;
+            _playerAnimation.Death();
+        }
+        // remove 1 health
+        // update UI display
+        // check for death
+        // play death animation
+    }
+
+    public void AddDiamonds(int amount)
+    {
+        Diamonds += amount;
+        UIManager.Instance.UpdateDiamondCount(Diamonds);
     }
 }

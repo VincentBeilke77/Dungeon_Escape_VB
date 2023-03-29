@@ -4,7 +4,7 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Ground
+  - Shootable
   layers:
   - Default
   - TransparentFX
@@ -14,10 +14,10 @@ TagManager:
   - UI
   - Player
   - Enemy
+  - Lighting
   - Ground
-  - Sword
-  - EnemyWeapon
-  - 
+  - Weapon
+  - EnemyAttack
   - 
   - 
   - 
